@@ -44,6 +44,10 @@ type {{.EntityName}} struct {
 }
 
 
+type Form struct {
+	Form   {{.EntityName}} `json:"{{.EntityName}}"`
+}
+
 /*
 	说明：创建实例对象
 	入参：db:数据库sql.DB, 数据库已经连接, level:日志级别
@@ -185,8 +189,12 @@ func (r *{{.EntityName}}List) GetList(s Search) ([]{{.EntityName}}, error) {
 		where += " and {{.ColTagName}}='" + s.{{.ColName}} + "'"
 	}	{{end}}
 	{{end}}
-	
-	qrySql := fmt.Sprintf("Select {{range .Cols}}{{if eq .ColTagName "version"}}{{.ColTagName}}{{else}}{{.ColTagName}},{{end}}{{end}} from {{.TableName}} where 1=1 %s Limit %d offset %d", where, s.PageSize, (s.PageNo-1)*s.PageSize)
+	var qrySql string
+	if s.PageSize==0 &&s.PageNo==0{
+	qrySql = fmt.Sprintf("Select {{range .Cols}}{{if eq .ColTagName "version"}}{{.ColTagName}}{{else}}{{.ColTagName}},{{end}}{{end}} from {{.TableName}} where 1=1 ", where)
+	}else{
+	qrySql = fmt.Sprintf("Select {{range .Cols}}{{if eq .ColTagName "version"}}{{.ColTagName}}{{else}}{{.ColTagName}},{{end}}{{end}} from {{.TableName}} where 1=1 %s Limit %d offset %d", where, s.PageSize, (s.PageNo-1)*s.PageSize)
+	}
 	if r.Level == DEBUG {
 		log.Println(SQL_SELECT, qrySql)
 	}
