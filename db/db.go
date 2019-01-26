@@ -12,12 +12,12 @@ import (
 
 //map for converting mysql type to golang types
 var typeForMysqlToGo = map[string]string{
-	"int":                "int",
+	"int":                "int64",
 	"integer":            "int",
-	"tinyint":            "int",
+	"tinyint":            "int64",
 	"smallint":           "int",
 	"mediumint":          "int",
-	"bigint":             "int",
+	"bigint":             "int64",
 	"int unsigned":       "int",
 	"integer unsigned":   "int",
 	"tinyint unsigned":   "int",

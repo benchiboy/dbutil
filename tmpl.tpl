@@ -92,7 +92,7 @@ func (r *{{.EntityName}}List) GetTotal(s Search) (int, error) {
 	var where string
 	l := time.Now()
 	{{range .Cols}}
-	{{if eq .ColType "int" }}
+	{{if eq .ColType "int64" }}
 	if s.{{.ColName}} != 0 {
 		where += " and {{.ColTagName}}=" + fmt.Sprintf("%d", s.{{.ColName}})
 	}	{{end}}	{{if eq .ColType "float64" }}
@@ -132,8 +132,8 @@ func (r *{{.EntityName}}List) GetTotal(s Search) (int, error) {
 func (r {{.EntityName}}List) Get(s Search) (*{{.EntityName}}, error) {
 	var where string
 	l := time.Now()
-	{{range .Cols}}
-	{{if eq .ColType "int" }}
+	{{range .ColInserts}}
+	{{if eq .ColType "int64" }}
 	if s.{{.ColName}} != 0 {
 		where += " and {{.ColTagName}}=" + fmt.Sprintf("%d", s.{{.ColName}})
 	}	{{end}}	{{if eq .ColType "float64" }}
@@ -144,7 +144,8 @@ func (r {{.EntityName}}List) Get(s Search) (*{{.EntityName}}, error) {
 		where += " and {{.ColTagName}}='" + s.{{.ColName}} + "'"
 	}	{{end}}
 	{{end}}
-	qrySql := fmt.Sprintf("Select {{range .Cols}}{{if eq .ColTagName "version"}}{{.ColTagName}}{{else}}{{.ColTagName}},{{end}}{{end}} from {{.TableName}} where 1=1 %s Limit %d offset %d", where, s.PageSize, (s.PageNo-1)*s.PageSize)
+	
+	qrySql := fmt.Sprintf("Select {{range .ColInserts}}{{if eq .ColTagName "version"}}{{.ColTagName}}{{else}}{{.ColTagName}},{{end}}{{end}} from {{.TableName}} where 1=1 %s ", where)
 	if r.Level == DEBUG {
 		log.Println(SQL_SELECT, qrySql)
 	}
@@ -157,7 +158,7 @@ func (r {{.EntityName}}List) Get(s Search) (*{{.EntityName}}, error) {
 
 	var p  {{.EntityName}}
 	for rows.Next() {
-		rows.Scan({{range .Cols}}&p.{{if eq .ColTagName "version"}}{{.ColName}}{{else}}{{.ColName}},{{end}}{{end}})
+		rows.Scan({{range .ColInserts}}&p.{{if eq .ColTagName "version"}}{{.ColName}}{{else}}{{.ColName}},{{end}}{{end}})
 		break
 	}
 	log.Println(SQL_ELAPSED, r)
@@ -178,7 +179,7 @@ func (r *{{.EntityName}}List) GetList(s Search) ([]{{.EntityName}}, error) {
 	l := time.Now()
 	
 	{{range .Cols}}
-	{{if eq .ColType "int" }}
+	{{if eq .ColType "int64" }}
 	if s.{{.ColName}} != 0 {
 		where += " and {{.ColTagName}}=" + fmt.Sprintf("%d", s.{{.ColName}})
 	}	{{end}}	{{if eq .ColType "float64" }}
@@ -255,7 +256,7 @@ func (r {{.EntityName}}List) InsertEntity(p {{.EntityName}}) error {
 	var colNames, colTags string
 	valSlice := make([]interface{}, 0)
 	{{range .Cols}}
-	{{if eq .ColType "int" }}
+	{{if eq .ColType "int64" }}
 	if p.{{.ColName}} != 0 {
 		colNames += "{{.ColTagName}},"
 		colTags += "?,"
