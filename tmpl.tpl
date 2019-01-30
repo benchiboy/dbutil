@@ -1,4 +1,4 @@
-package resume
+package {{.PackageName}}
 
 import (
 	"database/sql"

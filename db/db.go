@@ -60,6 +60,7 @@ type ColList struct {
 	KeyColName    string
 	KeyType       string
 	Level         int
+	PackageName   string
 	TableName     string
 	EntityName    string
 	EntityTagName string
@@ -75,7 +76,7 @@ type Col struct {
 /*
 	创建产品对象
 */
-func New(url string, tableName string, entityName string, entityTagName string, keyColName string) *ColList {
+func New(url string, tableName string, entityName string, entityTagName string, keyColName string, packName string) *ColList {
 	db, err := sql.Open("mysql", url)
 	if err != nil {
 		log.Println("Open database error:", err)
@@ -85,7 +86,7 @@ func New(url string, tableName string, entityName string, entityTagName string, 
 		log.Println("Ping database error:", err)
 		return nil
 	}
-	return &ColList{TableName: tableName, EntityName: entityName, EntityTagName: entityTagName, KeyColName: keyColName, DB: db}
+	return &ColList{TableName: tableName, EntityName: entityName, EntityTagName: entityTagName, KeyColName: keyColName, PackageName: packName, DB: db}
 }
 
 //get table columes
@@ -95,7 +96,7 @@ func (r *ColList) GetList() (*ColList, error) {
 	if r.TableName != "" {
 		where = " and TABLE_NAME='" + r.TableName + "'"
 	}
-	qrySql := fmt.Sprintf("SELECT b.COLUMN_NAME,b.DATA_TYPE,b.COLUMN_COMMENT  FROM information_schema.COLUMNS b  WHERE  1=1" + where)
+	qrySql := fmt.Sprintf("SELECT b.COLUMN_NAME,b.DATA_TYPE,b.COLUMN_COMMENT  FROM information_schema.COLUMNS b   WHERE  b.table_schema='tba2_db' and  1=1" + where)
 	rows, err := r.DB.Query(qrySql)
 	if err != nil {
 		log.Println(err.Error())
