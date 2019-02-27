@@ -92,7 +92,7 @@ func (r *{{.EntityName}}List) GetTotal(s Search) (int, error) {
 	var where string
 	l := time.Now()
 	{{range .Cols}}
-	{{if eq .ColType "int64" }}
+	{{if or (eq .ColType "int64")  (eq .ColType "int")}}
 	if s.{{.ColName}} != 0 {
 		where += " and {{.ColTagName}}=" + fmt.Sprintf("%d", s.{{.ColName}})
 	}	{{end}}	{{if eq .ColType "float64" }}
@@ -133,7 +133,7 @@ func (r {{.EntityName}}List) Get(s Search) (*{{.EntityName}}, error) {
 	var where string
 	l := time.Now()
 	{{range .ColInserts}}
-	{{if eq .ColType "int64" }}
+	{{if or (eq .ColType "int64")  (eq .ColType "int")}}
 	if s.{{.ColName}} != 0 {
 		where += " and {{.ColTagName}}=" + fmt.Sprintf("%d", s.{{.ColName}})
 	}	{{end}}	{{if eq .ColType "float64" }}
@@ -179,7 +179,7 @@ func (r *{{.EntityName}}List) GetList(s Search) ([]{{.EntityName}}, error) {
 	l := time.Now()
 	
 	{{range .Cols}}
-	{{if eq .ColType "int64" }}
+	{{if or (eq .ColType "int64")  (eq .ColType "int") }}
 	if s.{{.ColName}} != 0 {
 		where += " and {{.ColTagName}}=" + fmt.Sprintf("%d", s.{{.ColName}})
 	}	{{end}}	{{if eq .ColType "float64" }}
@@ -219,6 +219,142 @@ func (r *{{.EntityName}}List) GetList(s Search) ([]{{.EntityName}}, error) {
 	return r.{{.EntityName}}s, nil
 }
 
+/*
+	说明：根据条件查询复核条件对象列表，支持分页查询
+	入参：s: 查询条件
+	出参：参数1：返回符合条件的对象列表, 参数2：如果错误返回错误对象
+*/
+
+func (r *{{.EntityName}}List) GetListExt(s Search, fList []string) ([][]common.Data, error) {
+	var where string
+	l := time.Now()
+	
+	{{range .Cols}}
+	{{if or (eq .ColType "int64")  (eq .ColType "int")}}
+	if s.{{.ColName}} != 0 {
+		where += " and {{.ColTagName}}=" + fmt.Sprintf("%d", s.{{.ColName}})
+	}	{{end}}	{{if eq .ColType "float64" }}
+	if s.{{.ColName}} != 0 {
+		where += " and {{.ColTagName}}=" + fmt.Sprintf("%f", s.{{.ColName}})
+	}	{{end}}	{{if eq .ColType "string" }}
+	if s.{{.ColName}} != "" {
+		where += " and {{.ColTagName}}='" + s.{{.ColName}} + "'"
+	}	{{end}}
+	{{end}}
+	
+
+	colNames := ""
+	for _, v := range fList {
+		colNames += v + ","
+
+	}
+	colNames = strings.TrimRight(colNames, ",")
+
+	var qrySql string
+	if s.PageSize==0 &&s.PageNo==0{
+		qrySql = fmt.Sprintf("Select %s from {{.TableName}} where 1=1 %s", colNames,where)
+	}else{
+		qrySql = fmt.Sprintf("Select %s from {{.TableName}} where 1=1 %s Limit %d offset %d", colNames,where, s.PageSize, (s.PageNo-1)*s.PageSize)
+	}
+	if r.Level == DEBUG {
+		log.Println(SQL_SELECT, qrySql)
+	}
+	rows, err := r.DB.Query(qrySql)
+	if err != nil {
+		log.Println(SQL_ERROR, err.Error())
+		return nil, nil
+	}
+	defer rows.Close()
+
+	Columns, _ := rows.Columns()
+	values := make([]sql.RawBytes, len(Columns))
+	scanArgs := make([]interface{}, len(values))
+	for i := range values {
+		scanArgs[i] = &values[i]
+	}
+
+	rowData := make([][]common.Data, 0)
+	for rows.Next() {
+		err = rows.Scan(scanArgs...)
+		colData := make([]common.Data, 0)
+		for k, _ := range values {
+			d := new(common.Data)
+			d.FieldName = Columns[k]
+			d.FieldValue = string(values[k])
+			colData = append(colData, *d)
+		}
+		rowData = append(rowData, colData)
+	}
+
+	log.Println(SQL_ELAPSED, "==========>>>>>>>>>>>", rowData)
+	if r.Level == DEBUG {
+		log.Println(SQL_ELAPSED, time.Since(l))
+	}
+	return rowData, nil
+}
+
+
+
+
+/*
+	说明：根据主键查询符合条件的记录，并保持成MAP
+	入参：s: 查询条件
+	出参：参数1：返回符合条件的对象, 参数2：如果错误返回错误对象
+*/
+
+func (r *{{.EntityName}}List) GetExt(s Search) (map[string]string, error) {
+	var where string
+	l := time.Now()
+
+	{{range .Cols}}
+	{{if or (eq .ColType "int64")  (eq .ColType "int")}}
+	if s.{{.ColName}} != 0 {
+		where += " and {{.ColTagName}}=" + fmt.Sprintf("%d", s.{{.ColName}})
+	}	{{end}}	{{if eq .ColType "float64" }}
+	if s.{{.ColName}} != 0 {
+		where += " and {{.ColTagName}}=" + fmt.Sprintf("%f", s.{{.ColName}})
+	}	{{end}}	{{if eq .ColType "string" }}
+	if s.{{.ColName}} != "" {
+		where += " and {{.ColTagName}}='" + s.{{.ColName}} + "'"
+	}	{{end}}
+	{{end}}
+
+	qrySql := fmt.Sprintf("Select {{range .ColInserts}}{{if eq .ColTagName "version"}}{{.ColTagName}}{{else}}{{.ColTagName}},{{end}}{{end}} from {{.TableName}} where 1=1 %s ", where)
+	if r.Level == DEBUG {
+		log.Println(SQL_SELECT, qrySql)
+	}
+	rows, err := r.DB.Query(qrySql)
+	if err != nil {
+		log.Println(SQL_ERROR, err.Error())
+		return nil, nil
+	}
+	defer rows.Close()
+
+
+	Columns, _ := rows.Columns()
+
+	values := make([]sql.RawBytes, len(Columns))
+	scanArgs := make([]interface{}, len(values))
+	for i := range values {
+		scanArgs[i] = &values[i]
+	}
+
+	for rows.Next() {
+		err = rows.Scan(scanArgs...)
+	}
+
+	fldValMap := make(map[string]string)
+	for k, v := range Columns {
+		fldValMap[v] = string(values[k])
+	}
+
+	log.Println(SQL_ELAPSED, "==========>>>>>>>>>>>", fldValMap)
+	if r.Level == DEBUG {
+		log.Println(SQL_ELAPSED, time.Since(l))
+	}
+	return fldValMap, nil
+
+}
 
 /*
 	说明：插入对象到数据表中，这个方法要求对象的各个属性必须赋值
@@ -256,7 +392,7 @@ func (r {{.EntityName}}List) InsertEntity(p {{.EntityName}}) error {
 	var colNames, colTags string
 	valSlice := make([]interface{}, 0)
 	{{range .Cols}}
-	{{if eq .ColType "int64" }}
+	{{if or (eq .ColType "int64")  (eq .ColType "int")}}
 	if p.{{.ColName}} != 0 {
 		colNames += "{{.ColTagName}},"
 		colTags += "?,"
@@ -351,6 +487,66 @@ func (r {{.EntityName}}List) InsertMap(m map[string]interface{}) error {
 	return nil
 }
 
+
+
+/*
+	说明：插入对象到数据表中，这个方法会判读对象的各个属性，如果属性不为空，才加入插入列中；
+	入参：p:插入的对象
+	出参：参数1：如果出错，返回错误对象；成功返回nil
+*/
+
+
+func (r {{.EntityName}}List) UpdataEntity(keyNo string,p {{.EntityName}}) error {
+	l := time.Now()
+	var colNames string
+	valSlice := make([]interface{}, 0)
+	{{range .Cols}}
+	{{if or (eq .ColType "int64")  (eq .ColType "int")}}
+	if p.{{.ColName}} != 0 {
+		colNames += "{{.ColTagName}}=?,"
+		valSlice = append(valSlice, p.{{.ColName}})
+	}	{{end}}	{{if eq .ColType "string" }}
+	if p.{{.ColName}} != "" {
+		colNames += "{{.ColTagName}}=?,"
+		
+		valSlice = append(valSlice, p.{{.ColName}})
+	}	{{end}}	{{if eq .ColType "float64" }}
+	if p.{{.ColName}} != 0.00 {
+		colNames += "{{.ColTagName}}=?,"
+		valSlice = append(valSlice, p.{{.ColName}})
+	}	{{end}}	{{end}}
+	
+	colNames = strings.TrimRight(colNames, ",")
+	valSlice = append(valSlice, keyNo)
+
+	exeSql := fmt.Sprintf("update  {{.TableName}}(%s)  where {{.KeyColName}}=? ", colNames)
+	if r.Level == DEBUG {
+		log.Println(SQL_INSERT, exeSql)
+	}
+	stmt, err := r.DB.Prepare(exeSql)
+	if err != nil {
+		log.Println(SQL_ERROR, err.Error())
+		return err
+	}
+	defer stmt.Close()
+
+	ret, err := stmt.Exec(valSlice...)
+	if err != nil {
+		log.Println(SQL_INSERT, "Update data error: %v\n", err)
+		return err
+	}
+	if LastInsertId, err := ret.LastInsertId(); nil == err {
+		log.Println(SQL_INSERT, "LastInsertId:", LastInsertId)
+	}
+	if RowsAffected, err := ret.RowsAffected(); nil == err {
+		log.Println(SQL_INSERT, "RowsAffected:", RowsAffected)
+	}
+
+	if r.Level == DEBUG {
+		log.Println(SQL_ELAPSED, time.Since(l))
+	}
+	return nil
+}
 
 /*
 	说明：根据更新主键及更新Map值更新数据表；

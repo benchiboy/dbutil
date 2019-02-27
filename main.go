@@ -12,13 +12,39 @@ import (
 
 func main() {
 	fmt.Println("Hello...")
-	redBuf, _ := ioutil.ReadFile(".\\tmpl.tpl")
-	dbo := db.New("root:123456@tcp(10.89.4.203:3306)/tba2_db", "tba_accounts", "Account", "account", "user_id", "account")
+	//	redBuf, _ := ioutil.ReadFile("./tmpl.tpl")
+	//	dbo := db.New("root:123456@tcp(127.0.0.1:3306)/hcd_db", "b_flow_point_role", "Flow_point_role", "flow_point_role", "id", "flow_point_role")
+	//	colList, _ := dbo.GetList()
+	//	fmt.Println(colList.Cols)
+	//	t := template.Must(template.New("testing").Parse(string(redBuf)))
+
+	//	wFile, err := os.Create("/Users/zhoutuguang/go/src/hcd-gate/service/flow_point_role/Flow_Point_Role.go")
+	//	if err != nil {
+	//		fmt.Println(err)
+	//		return
+	//	}
+	//	t.Execute(wFile, colList)
+
+	//	redBuf, _ := ioutil.ReadFile("./tmpl.tpl")
+	//	dbo := db.New("root:123456@tcp(127.0.0.1:3306)/hcd_db", "b_clinic", "Clinic", "clinic", "clinic_id", "clinic")
+	//	colList, _ := dbo.GetList()
+	//	fmt.Println(colList.Cols)
+	//	t := template.Must(template.New("testing").Parse(string(redBuf)))
+
+	//	wFile, err := os.Create("/Users/zhoutuguang/go/src/hcd-gate/service/clinic/Clinic.go")
+	//	if err != nil {
+	//		fmt.Println(err)
+	//		return
+	//	}
+	//	t.Execute(wFile, colList)
+
+	redBuf, _ := ioutil.ReadFile("./tmpl.tpl")
+	dbo := db.New("root:123456@tcp(127.0.0.1:3306)/hcd_db", "f_user_data", "UserData", "userdata", "flow_batch_id", "user_data")
 	colList, _ := dbo.GetList()
 	fmt.Println(colList.Cols)
 	t := template.Must(template.New("testing").Parse(string(redBuf)))
 
-	wFile, err := os.Create("F:\\go-dev\\src\\tbactl\\service\\account\\Account.go")
+	wFile, err := os.Create("/Users/zhoutuguang/go/src/hcd-gate/service/user_data/User_Data.go")
 	if err != nil {
 		fmt.Println(err)
 		return
