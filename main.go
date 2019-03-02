@@ -38,16 +38,43 @@ func main() {
 	//	}
 	//	t.Execute(wFile, colList)
 
-	redBuf, _ := ioutil.ReadFile("./tmpl.tpl")
-	dbo := db.New("root:123456@tcp(127.0.0.1:3306)/hcd_db", "f_user_data", "UserData", "userdata", "flow_batch_id", "user_data")
-	colList, _ := dbo.GetList()
-	fmt.Println(colList.Cols)
-	t := template.Must(template.New("testing").Parse(string(redBuf)))
+	//	redBuf, _ := ioutil.ReadFile("./tmpl.tpl")
+	//	dbo := db.New("root:123456@tcp(127.0.0.1:3306)/hcd_db", "f_user_data", "UserData", "userdata", "flow_batch_id", "user_data")
+	//	colList, _ := dbo.GetList()
+	//	fmt.Println(colList.Cols)
+	//	t := template.Must(template.New("testing").Parse(string(redBuf)))
 
-	wFile, err := os.Create("/Users/zhoutuguang/go/src/hcd-gate/service/user_data/User_Data.go")
-	if err != nil {
-		fmt.Println(err)
-		return
-	}
-	t.Execute(wFile, colList)
+	//	wFile, err := os.Create("/Users/zhoutuguang/go/src/hcd-gate/service/user_data/User_Data.go")
+	//	if err != nil {
+	//		fmt.Println(err)
+	//		return
+	//	}
+	//	t.Execute(wFile, colList)
+
+	//	redBuf, _ := ioutil.ReadFile("./tmpl.tpl")
+	//	dbo := db.New("root:123456@tcp(127.0.0.1:3306)/hcd_db", "b_role", "Role", "role", "role_index", "role")
+	//	colList, _ := dbo.GetList()
+	//	fmt.Println(colList.Cols)
+	//	t := template.Must(template.New("testing").Parse(string(redBuf)))
+
+	//	wFile, err := os.Create("/Users/zhoutuguang/go/src/hcd-gate/service/role/Role.go")
+	//	if err != nil {
+	//		fmt.Println(err)
+	//		return
+	//	}
+	//	t.Execute(wFile, colList)
+
+	//	redBuf, _ := ioutil.ReadFile("./tmpl.tpl")
+	//	dbo := db.New("root:123456@tcp(127.0.0.1:3306)/hcd_db", "b_personal", "Personal", "personal", "personnel_id", "personal")
+	//	colList, _ := dbo.GetList()
+	//	fmt.Println(colList.Cols)
+	//	t := template.Must(template.New("testing").Parse(string(redBuf)))
+
+	//	wFile, err := os.Create("/Users/zhoutuguang/go/src/hcd-gate/service/personal/Personal.go")
+	//	if err != nil {
+	//		fmt.Println(err)
+	//		return
+	//	}
+	//	t.Execute(wFile, colList)
+
 }

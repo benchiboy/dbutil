@@ -132,7 +132,7 @@ func (r *{{.EntityName}}List) GetTotal(s Search) (int, error) {
 func (r {{.EntityName}}List) Get(s Search) (*{{.EntityName}}, error) {
 	var where string
 	l := time.Now()
-	{{range .ColInserts}}
+	{{range .Cols}}
 	{{if or (eq .ColType "int64")  (eq .ColType "int")}}
 	if s.{{.ColName}} != 0 {
 		where += " and {{.ColTagName}}=" + fmt.Sprintf("%d", s.{{.ColName}})
@@ -145,21 +145,22 @@ func (r {{.EntityName}}List) Get(s Search) (*{{.EntityName}}, error) {
 	}	{{end}}
 	{{end}}
 	
-	qrySql := fmt.Sprintf("Select {{range .ColInserts}}{{if eq .ColTagName "version"}}{{.ColTagName}}{{else}}{{.ColTagName}},{{end}}{{end}} from {{.TableName}} where 1=1 %s ", where)
+	qrySql := fmt.Sprintf("Select {{range .Cols}}{{if eq .ColTagName "version"}}{{.ColTagName}}{{else}}{{.ColTagName}},{{end}}{{end}} from {{.TableName}} where 1=1 %s ", where)
 	if r.Level == DEBUG {
 		log.Println(SQL_SELECT, qrySql)
 	}
 	rows, err := r.DB.Query(qrySql)
 	if err != nil {
 		log.Println(SQL_ERROR, err.Error())
-		return nil, nil
+		return nil, err
 	}
 	defer rows.Close()
 
 	var p  {{.EntityName}}
-	for rows.Next() {
+	if !rows.Next() {
+		return nil, fmt.Errorf("Not Finded Record")
+	} else {
 		rows.Scan({{range .ColInserts}}&p.{{if eq .ColTagName "version"}}{{.ColName}}{{else}}{{.ColName}},{{end}}{{end}})
-		break
 	}
 	log.Println(SQL_ELAPSED, r)
 	if r.Level == DEBUG {
@@ -203,7 +204,7 @@ func (r *{{.EntityName}}List) GetList(s Search) ([]{{.EntityName}}, error) {
 	rows, err := r.DB.Query(qrySql)
 	if err != nil {
 		log.Println(SQL_ERROR, err.Error())
-		return nil, nil
+		return nil, err
 	}
 	defer rows.Close()
 
@@ -262,7 +263,7 @@ func (r *{{.EntityName}}List) GetListExt(s Search, fList []string) ([][]common.D
 	rows, err := r.DB.Query(qrySql)
 	if err != nil {
 		log.Println(SQL_ERROR, err.Error())
-		return nil, nil
+		return nil, err
 	}
 	defer rows.Close()
 
@@ -319,14 +320,14 @@ func (r *{{.EntityName}}List) GetExt(s Search) (map[string]string, error) {
 	}	{{end}}
 	{{end}}
 
-	qrySql := fmt.Sprintf("Select {{range .ColInserts}}{{if eq .ColTagName "version"}}{{.ColTagName}}{{else}}{{.ColTagName}},{{end}}{{end}} from {{.TableName}} where 1=1 %s ", where)
+	qrySql := fmt.Sprintf("Select {{range .Cols}}{{if eq .ColTagName "version"}}{{.ColTagName}}{{else}}{{.ColTagName}},{{end}}{{end}} from {{.TableName}} where 1=1 %s ", where)
 	if r.Level == DEBUG {
 		log.Println(SQL_SELECT, qrySql)
 	}
 	rows, err := r.DB.Query(qrySql)
 	if err != nil {
 		log.Println(SQL_ERROR, err.Error())
-		return nil, nil
+		return nil, err
 	}
 	defer rows.Close()
 
@@ -339,7 +340,9 @@ func (r *{{.EntityName}}List) GetExt(s Search) (map[string]string, error) {
 		scanArgs[i] = &values[i]
 	}
 
-	for rows.Next() {
+	if !rows.Next() {
+		return nil, fmt.Errorf("Not Finded Record")
+	} else {
 		err = rows.Scan(scanArgs...)
 	}
 
@@ -391,7 +394,7 @@ func (r {{.EntityName}}List) InsertEntity(p {{.EntityName}}) error {
 	l := time.Now()
 	var colNames, colTags string
 	valSlice := make([]interface{}, 0)
-	{{range .Cols}}
+	{{range .ColInserts}}
 	{{if or (eq .ColType "int64")  (eq .ColType "int")}}
 	if p.{{.ColName}} != 0 {
 		colNames += "{{.ColTagName}},"
@@ -519,7 +522,7 @@ func (r {{.EntityName}}List) UpdataEntity(keyNo string,p {{.EntityName}}) error 
 	colNames = strings.TrimRight(colNames, ",")
 	valSlice = append(valSlice, keyNo)
 
-	exeSql := fmt.Sprintf("update  {{.TableName}}(%s)  where {{.KeyColName}}=? ", colNames)
+	exeSql := fmt.Sprintf("update  {{.TableName}} %s  where {{.KeyColName}}=? ", colNames)
 	if r.Level == DEBUG {
 		log.Println(SQL_INSERT, exeSql)
 	}

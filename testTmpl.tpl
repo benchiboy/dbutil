@@ -156,9 +156,10 @@ func (r {{.EntityName}}List) Get(s Search) (*{{.EntityName}}, error) {
 	defer rows.Close()
 
 	var p  {{.EntityName}}
-	for rows.Next() {
+	if !rows.Next() {
+		return nil, fmt.Errorf("Not Finded Record")
+	} else {
 		rows.Scan({{range .Cols}}&p.{{if eq .ColTagName "version"}}{{.ColName}}{{else}}{{.ColName}},{{end}}{{end}})
-		break
 	}
 	log.Println(SQL_ELAPSED, r)
 	if r.Level == DEBUG {
