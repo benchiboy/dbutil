@@ -6,12 +6,11 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
-
 	"text/template"
 )
 
 func main() {
-	fmt.Println("Hello...")
+	//	fmt.Println("Hello...")
 	//	redBuf, _ := ioutil.ReadFile("./tmpl.tpl")
 	//	dbo := db.New("root:123456@tcp(127.0.0.1:3306)/hcd_db", "b_flow_point_role", "Flow_point_role", "flow_point_role", "id", "flow_point_role")
 	//	colList, _ := dbo.GetList()
@@ -19,6 +18,34 @@ func main() {
 	//	t := template.Must(template.New("testing").Parse(string(redBuf)))
 
 	//	wFile, err := os.Create("/Users/zhoutuguang/go/src/hcd-gate/service/flow_point_role/Flow_Point_Role.go")
+	//	if err != nil {
+	//		fmt.Println(err)
+	//		return
+	//	}
+	//	t.Execute(wFile, colList)
+
+	//	fmt.Println("Hello...")
+	//	redBuf, _ := ioutil.ReadFile("./tmpl.tpl")
+	//	dbo := db.New("root:123456@tcp(127.0.0.1:3306)/hcd_db", "b_flow_point", "Flow_point", "flow_point", "id", "flow_point")
+	//	colList, _ := dbo.GetList()
+	//	fmt.Println(colList.Cols)
+	//	t := template.Must(template.New("testing").Parse(string(redBuf)))
+
+	//	wFile, err := os.Create("/Users/zhoutuguang/go/src/hcd-gate/service/flow_point/Flow_Point.go")
+	//	if err != nil {
+	//		fmt.Println(err)
+	//		return
+	//	}
+	//	t.Execute(wFile, colList)
+
+	//	fmt.Println("Hello...")
+	//	redBuf, _ := ioutil.ReadFile("./tmpl.tpl")
+	//	dbo := db.New("root:123456@tcp(127.0.0.1:3306)/hcd_db", "b_flow_point_fields", "FlowPointFields", "flowpointfields", "id", "flow_point_fields")
+	//	colList, _ := dbo.GetList()
+	//	fmt.Println(colList.Cols)
+	//	t := template.Must(template.New("testing").Parse(string(redBuf)))
+
+	//	wFile, err := os.Create("/Users/zhoutuguang/go/src/hcd-gate/service/flow_point_fields/Flow_Point_Fields.go")
 	//	if err != nil {
 	//		fmt.Println(err)
 	//		return
@@ -77,4 +104,30 @@ func main() {
 	//	}
 	//	t.Execute(wFile, colList)
 
+	//	redBuf, _ := ioutil.ReadFile("./tmpl.tpl")
+	//	dbo := db.New("root:123456@tcp(127.0.0.1:3306)/hcd_db", "b_flow", "Flow", "flow", "id", "flow")
+	//	colList, _ := dbo.GetList()
+	//	fmt.Println(colList.Cols)
+	//	t := template.Must(template.New("testing").Parse(string(redBuf)))
+
+	//	wFile, err := os.Create("/Users/zhoutuguang/go/src/hcd-gate/service/flow/Flow.go")
+	//	if err != nil {
+	//		fmt.Println(err)
+	//		return
+	//	}
+	//	t.Execute(wFile, colList)
+
+	redBuf, _ := ioutil.ReadFile("./tmpl.tpl")
+	dbo := db.New("root:123456@tcp(127.0.0.1:3306)/hcd_db", "b_user", "UserR", "user", "user_id", "user")
+	colList, _ := dbo.GetList()
+	fmt.Println(colList.Cols)
+	t := template.Must(template.New("testing").Parse(string(redBuf)))
+
+	wFile, err := os.Create("/Users/zhoutuguang/go/src/hcd-gate/service/user/User.go")
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+	t.Execute(wFile, colList)
+	//fmt.Println("", 1+1*100-100/1000)
 }

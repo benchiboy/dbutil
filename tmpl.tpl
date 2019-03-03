@@ -6,8 +6,8 @@ import (
 	"log"
 	"strings"
 	"time"
-
-	_ "github.com/jinzhu/gorm/dialects/mysql"
+	"hcd-gate/service/pubtype"
+	
 )
 
 const (
@@ -28,6 +28,7 @@ type Search struct {
 	{{.ColName}}	{{.ColType}}	`json:"{{.ColTagName}}"`{{end}}
 	PageNo   int    `json:"page_no"`
 	PageSize int    `json:"page_size"`
+	ExtraWhere   string `json:"extra_where"`
 	SortFld  string `json:"sort_fld"`
 }
 
@@ -103,6 +104,11 @@ func (r *{{.EntityName}}List) GetTotal(s Search) (int, error) {
 		where += " and {{.ColTagName}}='" + s.{{.ColName}} + "'"
 	}	{{end}}
 	{{end}}
+
+	if s.ExtraWhere != "" {
+		where += s.ExtraWhere
+	}
+
 	qrySql := fmt.Sprintf("Select count(1) as total from {{.TableName}}   where 1=1 %s", where)
 	if r.Level == DEBUG {
 		log.Println(SQL_SELECT, qrySql)
@@ -144,6 +150,10 @@ func (r {{.EntityName}}List) Get(s Search) (*{{.EntityName}}, error) {
 		where += " and {{.ColTagName}}='" + s.{{.ColName}} + "'"
 	}	{{end}}
 	{{end}}
+
+	if s.ExtraWhere != "" {
+		where += s.ExtraWhere
+	}
 	
 	qrySql := fmt.Sprintf("Select {{range .Cols}}{{if eq .ColTagName "version"}}{{.ColTagName}}{{else}}{{.ColTagName}},{{end}}{{end}} from {{.TableName}} where 1=1 %s ", where)
 	if r.Level == DEBUG {
@@ -192,6 +202,10 @@ func (r *{{.EntityName}}List) GetList(s Search) ([]{{.EntityName}}, error) {
 	}	{{end}}
 	{{end}}
 	
+	if s.ExtraWhere != "" {
+		where += s.ExtraWhere
+	}
+
 	var qrySql string
 	if s.PageSize==0 &&s.PageNo==0{
 		qrySql = fmt.Sprintf("Select {{range .Cols}}{{if eq .ColTagName "version"}}{{.ColTagName}}{{else}}{{.ColTagName}},{{end}}{{end}} from {{.TableName}} where 1=1 %s", where)
@@ -226,7 +240,7 @@ func (r *{{.EntityName}}List) GetList(s Search) ([]{{.EntityName}}, error) {
 	出参：参数1：返回符合条件的对象列表, 参数2：如果错误返回错误对象
 */
 
-func (r *{{.EntityName}}List) GetListExt(s Search, fList []string) ([][]common.Data, error) {
+func (r *{{.EntityName}}List) GetListExt(s Search, fList []string) ([][]pubtype.Data, error) {
 	var where string
 	l := time.Now()
 	
@@ -243,6 +257,9 @@ func (r *{{.EntityName}}List) GetListExt(s Search, fList []string) ([][]common.D
 	}	{{end}}
 	{{end}}
 	
+	if s.ExtraWhere != "" {
+		where += s.ExtraWhere
+	}
 
 	colNames := ""
 	for _, v := range fList {
@@ -274,16 +291,22 @@ func (r *{{.EntityName}}List) GetListExt(s Search, fList []string) ([][]common.D
 		scanArgs[i] = &values[i]
 	}
 
-	rowData := make([][]common.Data, 0)
+	rowData := make([][]pubtype.Data, 0)
 	for rows.Next() {
 		err = rows.Scan(scanArgs...)
-		colData := make([]common.Data, 0)
+		colData := make([]pubtype.Data, 0)
 		for k, _ := range values {
-			d := new(common.Data)
+			d := new(pubtype.Data)
 			d.FieldName = Columns[k]
 			d.FieldValue = string(values[k])
 			colData = append(colData, *d)
 		}
+		//extra flow_batch_id
+		d2 := new(pubtype.Data)
+		d2.FieldName = "flow_batch_id"
+		d2.FieldValue = string(values[0])
+		colData = append(colData, *d2)
+
 		rowData = append(rowData, colData)
 	}
 
