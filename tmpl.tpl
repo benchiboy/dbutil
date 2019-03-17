@@ -413,7 +413,7 @@ func (r {{.EntityName}}List) Insert(p {{.EntityName}}) error {
 */
 
 
-func (r {{.EntityName}}List) InsertEntity(p {{.EntityName}}) error {
+func (r {{.EntityName}}List) InsertEntity(p {{.EntityName}}, tr *sql.Tx) error {
 	l := time.Now()
 	var colNames, colTags string
 	valSlice := make([]interface{}, 0)
@@ -441,7 +441,14 @@ func (r {{.EntityName}}List) InsertEntity(p {{.EntityName}}) error {
 	if r.Level == DEBUG {
 		log.Println(SQL_INSERT, exeSql)
 	}
-	stmt, err := r.DB.Prepare(exeSql)
+
+	var stmt *sql.Stmt
+	var err error
+	if tr == nil {
+		stmt, err = r.DB.Prepare(exeSql)
+	} else {
+		stmt, err = tr.Prepare(exeSql)
+	}
 	if err != nil {
 		log.Println(SQL_ERROR, err.Error())
 		return err
@@ -472,7 +479,7 @@ func (r {{.EntityName}}List) InsertEntity(p {{.EntityName}}) error {
 	出参：参数1：如果出错，返回错误对象；成功返回nil
 */
 
-func (r {{.EntityName}}List) InsertMap(m map[string]interface{}) error {
+func (r {{.EntityName}}List) InsertMap(m map[string]interface{},tr *sql.Tx) error {
 	l := time.Now()
 	var colNames, colTags string
 	valSlice := make([]interface{}, 0)
@@ -488,7 +495,15 @@ func (r {{.EntityName}}List) InsertMap(m map[string]interface{}) error {
 	if r.Level == DEBUG {
 		log.Println(SQL_INSERT, exeSql)
 	}
-	stmt, err := r.DB.Prepare(exeSql)
+
+	var stmt *sql.Stmt
+	var err error
+	if tr == nil {
+		stmt, err = r.DB.Prepare(exeSql)
+	} else {
+		stmt, err = tr.Prepare(exeSql)
+	}
+
 	if err != nil {
 		log.Println(SQL_ERROR, err.Error())
 		return err
@@ -522,7 +537,7 @@ func (r {{.EntityName}}List) InsertMap(m map[string]interface{}) error {
 */
 
 
-func (r {{.EntityName}}List) UpdataEntity(keyNo string,p {{.EntityName}}) error {
+func (r {{.EntityName}}List) UpdataEntity(keyNo string,p {{.EntityName}},tr *sql.Tx) error {
 	l := time.Now()
 	var colNames string
 	valSlice := make([]interface{}, 0)
@@ -549,7 +564,15 @@ func (r {{.EntityName}}List) UpdataEntity(keyNo string,p {{.EntityName}}) error 
 	if r.Level == DEBUG {
 		log.Println(SQL_INSERT, exeSql)
 	}
-	stmt, err := r.DB.Prepare(exeSql)
+
+	var stmt *sql.Stmt
+	var err error
+	if tr == nil {
+		stmt, err = r.DB.Prepare(exeSql)
+	} else {
+		stmt, err = tr.Prepare(exeSql)
+	}
+
 	if err != nil {
 		log.Println(SQL_ERROR, err.Error())
 		return err
@@ -580,7 +603,7 @@ func (r {{.EntityName}}List) UpdataEntity(keyNo string,p {{.EntityName}}) error 
 	出参：参数1：如果出错，返回错误对象；成功返回nil
 */
 
-func (r {{.EntityName}}List) UpdateMap(keyNo string, m map[string]interface{}) error {
+func (r {{.EntityName}}List) UpdateMap(keyNo string, m map[string]interface{},tr *sql.Tx) error {
 	l := time.Now()
 
 	var colNames string
@@ -592,11 +615,17 @@ func (r {{.EntityName}}List) UpdateMap(keyNo string, m map[string]interface{}) e
 	valSlice = append(valSlice, keyNo)
 	colNames = strings.TrimRight(colNames, ",")
 	updateSql := fmt.Sprintf("Update {{.TableName}} set %s where {{.KeyColName}}=?", colNames)
-
 	if r.Level == DEBUG {
 		log.Println(SQL_UPDATE, updateSql)
 	}
-	stmt, err := r.DB.Prepare(updateSql)
+	var stmt *sql.Stmt
+	var err error
+	if tr == nil {
+		stmt, err = r.DB.Prepare(updateSql)
+	} else {
+		stmt, err = tr.Prepare(updateSql)
+	}
+	
 	if err != nil {
 		log.Println(SQL_ERROR, err.Error())
 		return err
@@ -627,13 +656,21 @@ func (r {{.EntityName}}List) UpdateMap(keyNo string, m map[string]interface{}) e
 	出参：参数1：如果出错，返回错误对象；成功返回nil
 */
 
-func (r {{.EntityName}}List) Delete(keyNo string) error {
+func (r {{.EntityName}}List) Delete(keyNo string,tr *sql.Tx) error {
 	l := time.Now()
 	delSql := fmt.Sprintf("Delete from  {{.TableName}}  where {{.KeyColName}}=?")
 	if r.Level == DEBUG {
 		log.Println(SQL_UPDATE, delSql)
 	}
-	stmt, err := r.DB.Prepare(delSql)
+
+	var stmt *sql.Stmt
+	var err error
+	if tr == nil {
+		stmt, err = r.DB.Prepare(delSql)
+	} else {
+		stmt, err = tr.Prepare(delSql)
+	}
+
 	if err != nil {
 		log.Println(SQL_ERROR, err.Error())
 		return err

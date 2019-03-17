@@ -96,7 +96,7 @@ func (r *ColList) GetList() (*ColList, error) {
 	if r.TableName != "" {
 		where = " and TABLE_NAME='" + r.TableName + "'"
 	}
-	qrySql := fmt.Sprintf("SELECT b.COLUMN_NAME,b.DATA_TYPE,b.COLUMN_COMMENT  FROM information_schema.COLUMNS b   WHERE  b.table_schema='hcd_db' and  1=1" + where)
+	qrySql := fmt.Sprintf("SELECT b.COLUMN_NAME,b.DATA_TYPE,b.COLUMN_COMMENT  FROM information_schema.COLUMNS b   WHERE  b.table_schema='health' and  1=1" + where)
 	rows, err := r.DB.Query(qrySql)
 	if err != nil {
 		log.Println(err.Error())
