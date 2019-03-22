@@ -170,7 +170,11 @@ func (r {{.EntityName}}List) Get(s Search) (*{{.EntityName}}, error) {
 	if !rows.Next() {
 		return nil, fmt.Errorf("Not Finded Record")
 	} else {
-		rows.Scan({{range .ColInserts}}&p.{{if eq .ColTagName "version"}}{{.ColName}}{{else}}{{.ColName}},{{end}}{{end}})
+		err:=rows.Scan({{range .Cols}}&p.{{if eq .ColTagName "version"}}{{.ColName}}{{else}}{{.ColName}},{{end}}{{end}})
+		if err != nil {
+			log.Println(SQL_ERROR, err.Error())
+			return nil, err
+		}
 	}
 	log.Println(SQL_ELAPSED, r)
 	if r.Level == DEBUG {
@@ -560,7 +564,7 @@ func (r {{.EntityName}}List) UpdataEntity(keyNo string,p {{.EntityName}},tr *sql
 	colNames = strings.TrimRight(colNames, ",")
 	valSlice = append(valSlice, keyNo)
 
-	exeSql := fmt.Sprintf("update  {{.TableName}} %s  where {{.KeyColName}}=? ", colNames)
+	exeSql := fmt.Sprintf("update  {{.TableName}}  set %s  where {{.KeyColName}}=? ", colNames)
 	if r.Level == DEBUG {
 		log.Println(SQL_INSERT, exeSql)
 	}
