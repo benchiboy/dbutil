@@ -210,30 +210,30 @@ func main() {
 	//	}
 	//	t.Execute(wFile, colList)
 
-	//	redBuf, _ := ioutil.ReadFile("./tmpl.tpl")
-	//	dbo := db.New("root:123456@tcp(127.0.0.1:3306)/hcd_db", "b_trace_log", "TraceLog", "trace_log", "trace_id", "trace_log")
-	//	colList, _ := dbo.GetList()
-	//	fmt.Println(colList.Cols)
-	//	t := template.Must(template.New("testing").Parse(string(redBuf)))
-
-	//	wFile, err := os.Create("/Users/zhoutuguang/go/src/hcd-gate/service/trace_log/Trace_Log.go")
-	//	if err != nil {
-	//		fmt.Println(err)
-	//		return
-	//	}
-	//	t.Execute(wFile, colList)
-
 	redBuf, _ := ioutil.ReadFile("./tmpl.tpl")
-	dbo := db.New("root:123456@tcp(127.0.0.1:3306)/hcd_db", "f_batch_control", "BatchControl", "batch_control", "flow_batch_id", "batch_control")
+	dbo := db.New("root:123456@tcp(127.0.0.1:3306)/hcd_db", "b_trace_log", "TraceLog", "trace_log", "trace_id", "trace_log")
 	colList, _ := dbo.GetList()
 	fmt.Println(colList.Cols)
 	t := template.Must(template.New("testing").Parse(string(redBuf)))
 
-	wFile, err := os.Create("/Users/zhoutuguang/go/src/hcd-gate/service/batch_control/Batch_Control.go")
+	wFile, err := os.Create("/Users/zhoutuguang/go/src/hcd-gate/service/trace_log/Trace_Log.go")
 	if err != nil {
 		fmt.Println(err)
 		return
 	}
 	t.Execute(wFile, colList)
+
+	//	redBuf, _ := ioutil.ReadFile("./tmpl.tpl")
+	//	dbo := db.New("root:123456@tcp(127.0.0.1:3306)/hcd_db", "f_batch_control", "BatchControl", "batch_control", "flow_batch_id", "batch_control")
+	//	colList, _ := dbo.GetList()
+	//	fmt.Println(colList.Cols)
+	//	t := template.Must(template.New("testing").Parse(string(redBuf)))
+
+	//	wFile, err := os.Create("/Users/zhoutuguang/go/src/hcd-gate/service/batch_control/Batch_Control.go")
+	//	if err != nil {
+	//		fmt.Println(err)
+	//		return
+	//	}
+	//	t.Execute(wFile, colList)
 
 }
